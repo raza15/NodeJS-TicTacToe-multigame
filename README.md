@@ -11,5 +11,5 @@ Running the app:
 
 Future thought:
 	I'm thinking of adding the support for playing against computer to this project. 
-
+Some snapshots of the app working:
 ![alt tag](Untitled.png)

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<script src='/socket.io/socket.io.js'></script>
+    	<script type='text/javascript'>
+    		function httpGet(theUrl) {
+			    var xmlHttp = new XMLHttpRequest();
+			    xmlHttp.open( "GET", theUrl, false );
+			    // xmlHttp.send( null );
+			    // return xmlHttp.responseText;
+			}
+    		function testResults (form) {
+			    var username = form.inputbox.value;
+			    if(username===""){
+			    	alert("Type Name to Proceed!");
+			    }else{
+				    // document.getElementById("gototictac").href="http://localhost:8000/?do=playtictactoe&name="+username;
+				    // console.log("username="+username);
+				    // alert("You typed: " + usernmame);
+				    // document.getElementById('gototictac').submit();
+				    var theUrl="http://localhost:8000/?do=playtictactoe&name="+username;
+				    console.log("url="+theUrl);
+				    // httpGet(theUrl);
+				    document.getElementById('gototictac').href=theUrl;
+				    document.getElementById('gototictac').click();
+				}
+			}
+    	</script>
+    </head>
+    <body>
+        <h1>Home Page</h1>
+        <FORM id="loginForm" NAME="myform" ACTION="" METHOD="GET">Enter Name:
+		<INPUT TYPE="text" NAME="inputbox" VALUE=""><P>
+		<INPUT TYPE="button" NAME="button" Value="Click to Play Tic tac toe" onClick="testResults(this.form)">
+		</FORM>
+		
+        <a id='gototictac' href="this button is clicked in code"></a>       
+    </body>
+</html>

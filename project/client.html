@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>button { height: 50px; width: 50px; font-size: 20pt }</style>
+        <script src='/socket.io/socket.io.js'></script>
+        <script type='text/javascript'>
+            var socket = io('127.0.0.1:8000');
+            
+
+            function getname(){
+                var url=window.location.href;
+                var n = url.indexOf("name=");
+                var nam=url.substring(n+5, url.length);
+                return nam;                
+            }
+            var playerid='-1'; var gamebegun=false;
+            var gameid='-1';
+            var myturn=false;
+            var myname=getname();
+            // console.log("hereee=="+url);
+            // document.getElementById('refresh').href="http://localhost:8000/?do=refreshed&name="+myname;
+            // document.getElementById('quit').href="http://localhost:8000/?do=quit&name="+myname;            
+
+            function displayNewBoard(newboard){
+                for(var i=0;i<newboard.length;i++){
+                    if(newboard[i]==='X'||newboard[i]==='O'){
+                        document.getElementById(getId(i)).innerHTML=newboard[i];
+                    }
+                }
+            }
+            function getId(num){
+                if(num===0) {
+                    id='m0'
+                }else if(num===1){
+                    id='m1'
+                }else if(num===2){
+                    id='m2'
+                }else if(num===3){
+                    id='m3'
+                }else if(num===4){
+                    id='m4'
+                }else if(num===5){
+                    id='m5'
+                }else if(num===6){
+                    id='m6'
+                }else if(num===7){
+                    id='m7'
+                }else if(num===8){
+                    id='m8'
+                }
+                return id;
+            }
+
+            socket.on('connect', function() { 
+                console.log('connected to server');
+            });
+            socket.on('disconnect', function() { console.log('disconnected from server'); 
+            });            
+
+            socket.on('to_client_newboard', function(d) {
+                var gid=d[2];
+                if(gameid==gid){
+                    var newboard=d[0];
+                    console.log("here");
+                    displayNewBoard(newboard);
+                    if(d[1]==playerid){
+                        document.getElementById('head_turn').innerHTML='YOUR TURN';
+                        myturn=true;                    
+                    }else{
+                            document.getElementById('head_turn').innerHTML="OTHER's TURN";
+                            myturn=false;                    
+                    }
+                }
+            });
+            socket.on('set_playerid', function(gameandplid) {
+                // console.log("here");
+                if(playerid==-1){
+                    gameid=gameandplid[0];
+                    playerid=gameandplid[1];
+                }
+                console.log(playerid);
+                document.getElementById('head1').innerHTML=myname+"! Playerid="+playerid.toString()+". Gameid="+gameid;            
+
+                document.getElementById('refresh').href="http://localhost:8000/?do=refreshed&name="+myname;
+                document.getElementById('quit').href="http://localhost:8000/?do=quit&gameid="+myname+"&plid="+playerid;   
+
+                //tell server my name
+                socket.emit('to_server_setname', [playerid,gameid,myname]);               
+            });      
+            socket.on('set_gamebegin', function(data) {
+                var str=data[0];
+                var gid=data[1];
+                if(gameid==gid){
+                    if(str=='Begin game'){
+                        gamebegun=true;
+                        if(playerid=='1'){
+                            document.getElementById('head_turn').innerHTML='YOUR TURN';
+                            myturn=true;
+                        }else{
+                            document.getElementById('head_turn').innerHTML="OTHER's TURN";                        
+                        }
+                    }
+                    document.getElementById('head2').innerHTML=str;
+                }                         
+            });      
+            socket.on('to_client_gameend',  function(data) {
+                var whowon=data[0];
+                var gid=data[1];
+                if(gameid==gid) {
+                    document.getElementById('head_turn').innerHTML="";
+                    if(whowon=='0'){
+                        //draw
+                        document.getElementById('head2').innerHTML="DRAW!";
+
+                    }else if(whowon=='1'&&playerid=='1'){
+                        //player1 won
+                        document.getElementById('head_turn').innerHTML="YOU WIN!";
+                     }else if(whowon=='2'&&playerid=='2'){
+                        document.getElementById('head_turn').innerHTML="YOU WIN!";
+                     }else{
+                        document.getElementById('head_turn').innerHTML="YOU LOSE!";
+                     }
+                }
+            });
+
+            function move(num) {
+                if(myturn==true){
+                    socket.emit('to_server_move', [num,playerid,gameid]);
+                }else{
+                    alert('NOT YOU TURN!');
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <hr>
+        <h1 id='head1'></h1>
+        <h3 id='head2'></h3>
+        <h3 id='head_turn'></h3>
+        <hr>
+        <table>
+            <tr>
+                <td><button id='m0' onclick='move(0)'></button></td>
+                <td><button id='m1' onclick='move(1)'></button></td>
+                <td><button id='m2' onclick='move(2)'></button></td>
+            </tr>
+            <tr>
+                <td><button id='m3' onclick='move(3)'></button></td>
+                <td><button id='m4' onclick='move(4)'></button></td>
+                <td><button id='m5' onclick='move(5)'></button></td>
+            </tr>
+            <tr>
+                <td><button id='m6' onclick='move(6)'></button></td>
+                <td><button id='m7' onclick='move(7)'></button></td>
+                <td><button id='m8' onclick='move(8)'></button></td>
+            </tr>
+        </table>
+        <hr>
+        <a id='refresh' href="http://localhost:8000/?do=refreshed"><button type="button" style="height:50px;width:200px">Refresh</button></a> 
+        <a id='quit' href="http://localhost:8000/?do=quit"><button type="button" style="height:50px;width:200px">Quit Game</button></a>
+    </body>
+</html>
